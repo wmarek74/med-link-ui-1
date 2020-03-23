@@ -53,7 +53,6 @@ export class PumpBluetoothApiService {
       this.databaseService.getMAC().then(a =>
       {
         this.targetBluDeviceUUID = a.toString();
-      console.log("to jest target: " + this.targetBluDeviceUUID);
       bluetooth.connect({
         UUID: this.targetBluDeviceUUID,
         onConnected: (peripheral: Peripheral) => {
@@ -65,7 +64,7 @@ export class PumpBluetoothApiService {
           console.log('Rozłączono' + peripheral.name + peripheral.UUID);
           reject(peripheral.name);
           this.unsubscribeAll();
-        },
+        }
       });
     });
     });

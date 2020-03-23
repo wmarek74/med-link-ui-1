@@ -26,6 +26,8 @@ export class SearchComponent implements OnInit {
   nsUrl: string;
   nsUrl2: string;
   nsKey: string;
+  phoneN: string;
+  //phone: string = '';
   nsKey2: string;
   carbs: string;
   pending = false;
@@ -44,6 +46,7 @@ export class SearchComponent implements OnInit {
     // Use the constructor to inject services.
   }
   ngOnInit(): void {
+    this.phoneN = 'Tel: ' + appSettings.getString('phoneN', 'Podaj nr tel. opiekuna');
     this.auto = appSettings.getBoolean('auto', false);
     this.bgSource = appSettings.getBoolean('bgsource', false);
     this.rangeText = "AUTO STOP PRZY WARTOSCI: " + appSettings.getNumber('range', 75) + "MG/DL";
@@ -53,7 +56,7 @@ export class SearchComponent implements OnInit {
       }
     );
     this.sendDatatoNightscout7().then(() =>
-      console.log(this.nsUrl2 + "fffffffffffff3333333f")
+      console.log(this.nsUrl2 + "fffffffff3333333f")
     );
   }
   getBGRange(){
@@ -61,7 +64,7 @@ export class SearchComponent implements OnInit {
       title: "Podaj wartość przy jakiej ma zostać wyłączona pompa",
       message: "Wartość graniczna to:",
       okButtonText: "OK",
-      cancelButtonText: "Cancel",
+      cancelButtonText: "Anuluj",
       inputType: dialogs.inputType.number
     }).then(r => {
       console.log("Dialog closed!" + r.result + ", A TO TEKST:" + r.text);
@@ -76,6 +79,28 @@ export class SearchComponent implements OnInit {
 
     });
 }
+  setPhoneNumber(){
+    dialogs.prompt({
+      title: "Podaj nr tel. opiekuna",
+      message: "Podaj numer telefonu z którego będą przyjmowane komendy",
+      okButtonText: "OK",
+      cancelButtonText: "Anuluj",
+      inputType: dialogs.inputType.number
+    }).then(r => {
+      console.log("Dialog closed!" + r.result + ", A TO TEKST:" + r.text);
+      if (r.text === '') {
+        appSettings.setString('phoneN', 'Podaj nr tel. opiekuna');
+        this.phoneN = 'Podaj nr tel. opiekuna';
+      }
+      else {
+        Permissions.requestPermission(
+          android.Manifest.permission.SEND_SMS, "zezwolic na czytanie SMS?"
+        ).then(() => Permissions.requestPermission(android.Manifest.permission.READ_SMS));
+        appSettings.setString('phoneN', r.text);
+        this.phoneN = 'Tel: ' + r.text;
+      }
+    });
+  }
 
   sendLogs() {
     const documents = fs.path.join(android.os.Environment.getExternalStorageDirectory().getAbsolutePath().toString());

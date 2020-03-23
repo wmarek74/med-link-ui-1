@@ -3,6 +3,7 @@ import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import { IBasicSettings } from "~/app/model/med-link.model";
 import { DatabaseService } from "~/app/shared/database.service";
+import { SmsService } from "~/app/shared/sms-service";
 import { NightscoutApiService } from "~/app/shared/nightscout-api.service";
 import { PumpBluetoothApiService } from "~/app/shared/pump-bluetooth-api.service";
 import { RawDataService } from "~/app/shared/raw-data-parse.service";
@@ -25,6 +26,7 @@ export class DataFacadeService {
   constructor(
     private databaseService: DatabaseService,
     private zone: NgZone,
+    private smsService: SmsService,
     private nightscoutApiService: NightscoutApiService,
     private pumpBluetoothApiService: PumpBluetoothApiService,
     private rawDataService: RawDataService,
@@ -245,7 +247,7 @@ export class DataFacadeService {
           () =>
             setTimeout(
               () => this.pumpBluetoothApiService.sendCommand("OK+CONN"),
-              2500
+              4500
             ),
           () => {
             console.log("zatem nie wyslam ok kona");
@@ -422,7 +424,7 @@ export class DataFacadeService {
                         this.pumpBluetoothApiService.sendCommand("bolus  " + r);
                         setTimeout( () => this.pumpBluetoothApiService.read5().subscribe(btdane => {
                           console.log("btdane: !!!!!!!!!!!!!!!f!!!!!!!$%RSFD#WEF: //n" + btdane.toString());
-                          if (btdane.includes("pompa podaje") &&  btdane.includes("BL: " + r.toString())){
+                          if (btdane.includes("pompa podaje") &&  btdane.includes("BL: " + r.toString() + "J")){
                             this.successLog();
                             clearTimeout(timeoutAlert);
                           }
@@ -446,6 +448,7 @@ export class DataFacadeService {
                           okButtonText: "OK"
                         };
                         alert(options);
+                        console.log("Poleciał bład ");
                         this.pumpBluetoothApiService.disconnect();
                         clearTimeout(timeoutAlert);
                         resolve();
@@ -650,7 +653,6 @@ export class DataFacadeService {
       }, () => console.log("BADD ASS nie wylaczona"));
     }
     else {
-      console.log("AKT WOJNY2" + a + b.toLowerCase());
       if (appSettings.getBoolean('auto', false) && a > appSettings.getNumber('range', 75) && !(a === 0) && !(a.toString() === '000') && b.toLowerCase().includes('suspend')){
         console.log("AKT WOJNY3" + a + b);
         this.scanAndConnectStop().then(() => {
@@ -660,14 +662,27 @@ export class DataFacadeService {
       }
       else {
         console.log("Nie uzywam auto stop/start" + a + b);
-        this.pumpBluetoothApiService.disconnect();
+        //NA TESTY TO WYLACZYLEM:
+        //this.pumpBluetoothApiService.disconnect();
       }
 
     }
 
   }
+  validateSms() {
+    this.smsService.getInboxMessagesFromNumber().then( () => {
+    console.log("to jest tresc smsa: " + this.smsService.message.toUpperCase() + this.smsService.message.toUpperCase().match(/STOP/));
+    //const dateM = appSettings.getString('dateMessageOld', '');
+    if (this.smsService.message.toUpperCase().match(/STOP/) && !(this.smsService.dateMessage === appSettings.getString('dateMessageOld', ''))) {
+      appSettings.setString('dateMessageOld', this.smsService.dateMessage);
+      this.scanAndConnectStop().then(a => this.smsService.sendSms(), () => console.log("Wyslij smutnego smsa"));
+    }
+    else {
+      console.log("Brak komendy do wykonania");
+    }});
+  }
   transferDataFromPumpThenToApi() {
-    setTimeout(() => this.pumpBluetoothApiService.sendCommand2("s"), 400);
+    setTimeout(() => this.pumpBluetoothApiService.sendCommand2("s"), 3600);
     setTimeout(() => {
       this.pumpBluetoothApiService.read2().subscribe(data => {
         console.log('TOOOOO:   ' + data.toString());
@@ -686,6 +701,7 @@ export class DataFacadeService {
             .then(() => this.sendDatatoNightscout4())
             .then(() => this.databaseService.updateTempBasal())
             .then(() => {
+              this.validateSms();
               if (appSettings.getBoolean('bgsource', false) === true) {
                 this.nightscoutApiService.getBGfromNs().then(svg => {console.log( "TAAAAAAAAAAK2: " + JSON.stringify(svg));
                   const obj = JSON.parse(JSON.stringify(svg[0]));
@@ -715,7 +731,7 @@ export class DataFacadeService {
           });
         //this.pumpBluetoothApiService.disconnect();
       });
-    }, 400);
+    }, 3900);
   }
 
   private setArrow(old: string) {

@@ -6,6 +6,8 @@ import { map } from "rxjs/operators";
 import { WebView } from "tns-core-modules/ui/web-view";
 import { EventData } from "tns-core-modules/data/observable";
 import { isAndroid } from "tns-core-modules/platform";
+import { SmsService } from "../shared/sms-service";
+
 
 @Component({
   selector: "Home",
@@ -15,9 +17,12 @@ import { isAndroid } from "tns-core-modules/platform";
 export class HomeComponent implements OnInit {
   webViewSrc: string = 'https://openaps.readthedocs.io/en/latest/docs/While%20You%20Wait%20For%20Gear/nightscout-setup.html';
   constructor(public dataService: DataService,
-              public databaseService: DatabaseService ) {}
+              public databaseService: DatabaseService,
+              public smsService: SmsService) {}
 
   ngOnInit(): void {
+    //this.smsService.getInboxMessages();
+    //this.smsService.getInboxMessagesFromNumber();
     this.sendDatatoNightscout7().then(() => console.log(this.webViewSrc + "ffffffffffffff111111"));
   }
   onRefresh(){
