@@ -331,7 +331,7 @@ export class DataFacadeService {
                       this.pumpBluetoothApiService.sendCommand("stop");
                       setTimeout( () => this.pumpBluetoothApiService.read5().subscribe(() => {
                         this.zone.run (() => appSettings.setString("pumpStan", "WZNÓW POMPĘ"));
-                        this.pumpBluetoothApiService.disconnect();
+                       // this.pumpBluetoothApiService.disconnect();
                         clearTimeout(timeoutAlert);
                         resolve();
                       }), 500);
@@ -341,7 +341,7 @@ export class DataFacadeService {
                       this.pumpBluetoothApiService.sendCommand("start");
                       setTimeout( () => this.pumpBluetoothApiService.read4().subscribe(() => {
                         this.zone.run (() => appSettings.setString("pumpStan", "ZAWIEŚ POMPĘ"));
-                        this.pumpBluetoothApiService.disconnect();
+                       // this.pumpBluetoothApiService.disconnect();
                         clearTimeout(timeoutAlert);
                         resolve();
                       }), 500);
@@ -412,19 +412,20 @@ export class DataFacadeService {
           )
           .then(
             () => {
-              const timeoutAlert = setTimeout(() => this.errorPumpStan(), 68 * 1000);
+              const timeoutAlert = setTimeout(() => this.errorPumpStan(), 69 * 1000);
               this.pumpBluetoothApiService.read().subscribe(() => {
                 this.pumpBluetoothApiService.sendCommand2("x");
                 setTimeout(() => this.pumpBluetoothApiService.read3()
                     .subscribe( dane => {
-                      console.log("To jest wynik" + dane);
+                      console.log("To jest wynik" + dane + "koniec danych / wyniku");
                       if (dane.toString().includes("ustaw")){
-                        console.log("Taki bolus zostal nastawiony" + r);
+                        console.log("Taki bolus zostal nastawiony: " + r + 'z taka data: ' + new Date().getDate().toString() + '-' + ('0' + (Number(new Date().getMonth()) + 1 ).toString()).slice(-2).toString());
                         this.pumpBluetoothApiService.sendCommand("bolus  " + r);
-                        setTimeout( () => this.pumpBluetoothApiService.read5().subscribe(btdane => {
-                          console.log("btdane: !!!!!!!!!!!!!!!f!!!!!!!$%RSFD#WEF: //n" + btdane.toString());
-                          if (btdane.includes("pompa podaje") &&  btdane.includes("BL: " + r.toString() + "J")){
-                            this.successLog();
+                        setTimeout( () => this.pumpBluetoothApiService.read6().subscribe(btdane => {
+                          console.log("btdane: !!!!!!!!!!!!!" + btdane.toString() + "koniec!!!" + new Date().getDay().toString() + '-' + new Date().getMonth().toString() );
+                          if ((btdane.includes("pompa podaje") &&  btdane.includes("BL: " + r.toString() + "J")) ||
+                            (btdane.includes("pompa nie podaje") &&  btdane.includes("BL: " + r.toString() + "J") && btdane.includes(new Date().getDate().toString() + '-' + ('0' + (Number(new Date().getMonth()) + 1).toString()).slice(-2).toString()))){
+                            this.successLog(r.toString());
                             clearTimeout(timeoutAlert);
                           }
                           else {
@@ -588,10 +589,10 @@ export class DataFacadeService {
     };
     alert(options);
   }
-  successLog(){
+  successLog(r){
     const options = {
       title: "Brawo!",
-      message: "Udało się podać bolus!",
+      message: "Udało się podać bolus: " + r.toString() + " J" ,
       okButtonText: "OK"
     };
     alert(options);
@@ -644,41 +645,80 @@ export class DataFacadeService {
   }
 
   preventLowSugar(a: number, b: string) {
-    if (appSettings.getBoolean('auto', false) && a <= appSettings.getNumber('range', 75) && !(a === 0) && !(a.toString() === '000') && b.toLowerCase().includes('normal')){
-      console.log("AKT WOJNY" + a + b + appSettings.getBoolean('auto', false));
-      this.scanAndConnectStop().then(() => {
-        console.log("Pompa wyl");
-        appSettings.setString("autostop", new Date().toString().substring(3, 21) + " UWAGA! POMPA ZATRZYMANA PRZEZ FUNKCJĘ AUTO STOP\n\n" );
-      }, () => console.log("BADD ASS nie wylaczona"));
-    }
-    else {
-      if (appSettings.getBoolean('auto', false) && a > appSettings.getNumber('range', 75) && !(a === 0) && !(a.toString() === '000') && b.toLowerCase().includes('suspend')){
-        console.log("AKT WOJNY3" + a + b);
+    return new Promise((resolve, reject) => {
+      if (appSettings.getBoolean('auto', false) && a <= appSettings.getNumber('range', 75) && !(a === 0) && !(a.toString() === '000') && b.toLowerCase().includes('normal')) {
+        console.log("AKT WOJNY" + a + b + appSettings.getBoolean('auto', false));
         this.scanAndConnectStop().then(() => {
-          console.log("Pompa wlaczona");
-          appSettings.setString("autostop", new Date().toString().substring(3, 21) + " UWAGA! POMPA WZNOWIONA PRZEZ FUNKCJĘ AUTO START\n\n");
-        }, () => console.log("BADD ASS 2 nie wylaczona"));
-      }
-      else {
-        console.log("Nie uzywam auto stop/start" + a + b);
-        //NA TESTY TO WYLACZYLEM:
-        //this.pumpBluetoothApiService.disconnect();
-      }
+          console.log("Pompa wyl");
+          resolve();
+          appSettings.setString("autostop", new Date().toString().substring(3, 21) + " UWAGA! POMPA ZATRZYMANA PRZEZ FUNKCJĘ AUTO STOP\n\n");
+        }, () => console.log("BADD ASS nie wylaczona"));
+      } else {
+        if (appSettings.getBoolean('auto', false) && a > appSettings.getNumber('range', 75) && !(a === 0) && !(a.toString() === '000') && b.toLowerCase().includes('suspend')) {
+          console.log("AKT WOJNY3" + a + b);
+          this.scanAndConnectStop().then(() => {
+            console.log("Pompa wlaczona");
+            resolve();
+            appSettings.setString("autostop", new Date().toString().substring(3, 21) + " UWAGA! POMPA WZNOWIONA PRZEZ FUNKCJĘ AUTO START\n\n");
+          }, () => console.log("BADD ASS 2 nie wylaczona"));
+        } else {
+          console.log("Nie uzywam auto stop/start: " + a + b);
+          resolve();
+          //NA TESTY TO WYLACZYLEM:
+          //this.pumpBluetoothApiService.disconnect();
+        }
 
-    }
-
+      }
+    })
   }
   validateSms() {
-    this.smsService.getInboxMessagesFromNumber().then( () => {
-    console.log("to jest tresc smsa: " + this.smsService.message.toUpperCase());
-    //const dateM = appSettings.getString('dateMessageOld', '');
-    if (this.smsService.message.toUpperCase() === 'STOP' && !(this.smsService.dateMessage === appSettings.getString('dateMessageOld', ''))) {
-      appSettings.setString('dateMessageOld', this.smsService.dateMessage);
-      this.scanAndConnectStop().then(a => this.smsService.sendSms(), () => console.log("Wyslij smutnego smsa"));
-    }
-    else {
-      console.log("Brak komendy do wykonania");
-    }});
+    return new Promise((resolve, reject) => {
+      const phoneNumb = appSettings.getString('phoneN', null);
+      console.log("to jest numer tel:" + phoneNumb);
+      if (phoneNumb !== null && phoneNumb !== 'Podaj nr tel. opiekuna') {
+        this.smsService.getInboxMessagesFromNumber().then(() => {
+          console.log("to jest tresc smsa: " + this.smsService.message.toUpperCase());
+          //const dateM = appSettings.getString('dateMessageOld', '');
+          console.log("to jest data: " + new Date().valueOf() + "a to data smsa: " + this.smsService.dateMessage + " a to jest data odjeta o 15 min o sysdate: " + (Number(new Date().valueOf()) - 960000));
+          if (this.smsService.message.toUpperCase() === 'STOP' && !(this.smsService.dateMessage === appSettings.getString('dateMessageOld', '')) && Number(this.smsService.dateMessage) > (Number(new Date().valueOf()) - 960000)) {
+            this.scanAndConnectStop().then(a => {
+              appSettings.setString('dateMessageOld', this.smsService.dateMessage);
+              this.smsService.sendSms();
+              resolve();
+            }, () => console.log("Wyslij smutnego smsa"));
+          } else {
+            console.log("Brak komendy do wykonania");
+            resolve();
+          }
+        });
+      }
+      else {
+        resolve();
+      }
+    });
+  }
+  checkSourceBeforePrevent(parsedDate) {
+    return new Promise((resolve, reject) => {
+      if (appSettings.getBoolean('bgsource', false) === true) {
+        this.nightscoutApiService.getBGfromNs().then(svg => {console.log( "TAAAAAAAAAAK2: " + JSON.stringify(svg));
+          const obj = JSON.parse(JSON.stringify(svg[0]));
+          console.log(obj.sgv, svg[0]);
+          this.databaseService.insertBGfromNs(obj.sgv, new Date(obj.dateString), 1);
+          const d = new Date();
+          d.setMinutes(d.getMinutes() - 16);
+          if (new Date(obj.dateString) > d){
+            this.preventLowSugar(obj.sgv, parsedDate.statusPump.toString()).then( () => resolve());
+          }
+          else {
+            console.log("Stary cukier z NS");
+            resolve();
+          }
+        });
+
+      } else {
+        this.preventLowSugar(parsedDate.bloodGlucose.value, parsedDate.statusPump.toString()).then( () => resolve());
+      }
+    });
   }
   transferDataFromPumpThenToApi() {
     setTimeout(() => this.pumpBluetoothApiService.sendCommand2("s"), 400);
@@ -699,31 +739,7 @@ export class DataFacadeService {
             .then(() => this.databaseService.updateTreatments())
             .then(() => this.sendDatatoNightscout4())
             .then(() => this.databaseService.updateTempBasal())
-            .then(() => {
-              this.validateSms();
-              if (appSettings.getBoolean('bgsource', false) === true) {
-                this.nightscoutApiService.getBGfromNs().then(svg => {console.log( "TAAAAAAAAAAK2: " + JSON.stringify(svg));
-                  const obj = JSON.parse(JSON.stringify(svg[0]));
-                  console.log(obj.sgv, svg[0]);
-                  this.databaseService.insertBGfromNs(obj.sgv, new Date(obj.dateString), 1);
-                  const d = new Date();
-                  d.setMinutes(d.getMinutes() - 16);
-                  if (new Date(obj.dateString) > d){
-                    this.preventLowSugar(obj.sgv, parsedDate.statusPump.toString());
-                  }
-                  else{
-                    console.log("Stary cukier z NS");
-                  }
-
-                  // this.databaseService.insertBG(JSON.stringify(svg))
-                });
-
-              } else {
-                this.preventLowSugar(parsedDate.bloodGlucose.value, parsedDate.statusPump.toString());
-              }
-            })
-
-          //.then(() => this.wakeFacadeService.snoozeScreenByCall())
+            .then(() =>  this.checkSourceBeforePrevent(parsedDate).then(() => this.validateSms().then(() => this.pumpBluetoothApiService.disconnect())))
           .catch(error => {
             console.log(error);
             //this.wakeFacadeService.snoozeScreenByCall()

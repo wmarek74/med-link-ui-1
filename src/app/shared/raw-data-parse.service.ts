@@ -149,7 +149,7 @@ export class RawDataService {
     temporaryBasalMethodPercentage = /TDP:\s+?(\d+)%\s+?(\d+).+?(\d+)m/;
     totalInsulinGivenTodayRegex = /Dawka\sdziasiaj:([\d\.]+)J\n/;
     totalInsulinGivenYesterdayRegex = /Dawka\swczoraj:\s([\d\.]+)J\n/;
-    maximumBolusSettingRegex = /maksymalny bolus:\s\s([\d\.]+)/;
+    maximumBolusSettingRegex = /maksymalny bolus:\s+?([\d\.]+)/;
     incrementStepSettingRegex = /krok\sbolusa:\s([\d\.]+)/;
     maximumBasalSettingsRegex = /Max\.\sbaza:\s([\d\.]+)J\/h\n/;
     insulinWorkTimeSettingsRegex = /Czas\sinsuliny:\s(\d+)h\n/;

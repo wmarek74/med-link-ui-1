@@ -47,6 +47,7 @@ export class BrowseComponent implements OnInit, OnDestroy {
   stopPeriodPump: number;
   minuta: string;
   godzina: string;
+  categoryCheck: string;
 
   constructor(
     private widgetFacadeService: WidgetFacadeService,
@@ -126,9 +127,13 @@ export class BrowseComponent implements OnInit, OnDestroy {
       if (rc.toString().includes("KALKULATORA")) {
         console.log("Dialog closed!" + rc + ", A TO TEKST1:");
         this.fa.getCalcfromLocalDb().subscribe(category => {
+          this.categoryCheck = category.toString();
+          console.log("ten" + this.categoryCheck + "napis");
           this.maxBolus = category[0].value;
           this.dateRefresh = category[0].dateString;
         });
+        if (this.categoryCheck !== '') {
+
         this.databaseService.getCalcisf().subscribe(a => this.isf = a[0][3]);
         this.databaseService.getCalcjnaww().subscribe(a => this.tjnaww = a);
         this.databaseService.getCalcStep().subscribe(a => this.stepBol = a);
@@ -142,12 +147,12 @@ export class BrowseComponent implements OnInit, OnDestroy {
             console.log("shuga:" + this.lastBg);
             //srednia z bg range
             this.lastBg = ((Number(this.bgRange.split('-')[0].trim()) + Number(this.bgRange.split('-')[1].trim())) / 2).toString();
+            this.lastBgDate = 'BRAK CUKRU Z OSTATNICH 15 MIN!'
           }
           else {
             console.log("Brak infomracji o cukrze z 15 min i kalkulatorze bolusa")
           }
         });
-
 
         dialogs.prompt({
           title: "Podaj Bolus",
@@ -164,7 +169,7 @@ export class BrowseComponent implements OnInit, OnDestroy {
           console.log("setBolValStep" , Math.round(this.setBolVal / Number(this.stepBol)) * Number(this.stepBol));
             dialogs.prompt({
             title: "Podaj Bolus",
-            message: "\nCukier: " + this.lastBg + ' ' + this.lastBgDate + "\nRefresh: " + this.dateRefresh.substring(3, 21) + "\nPrzelicznik WW: " + this.tjnaww + "\nWspółczynnik wrażliwości: " + this.isf + "\nZakres oczekiwany: " + this.bgRange + "\nKrok Bolusa: " + this.stepBol + "\nMax bolus: " + this.maxBolus + "\nSugerowany bolus: " + this.setBolVal.toFixed(1) + "\nSUGEROWANY BOLUS PO UWZGLĘDNIENIU 'KROKU BOLUSA': ",
+            message: "\nCukier: " + this.lastBg + ' ' + this.lastBgDate + "\nOdświeżenie: " + this.dateRefresh.substring(3, 21) + "\nPrzelicznik WW: " + this.tjnaww + "\nWspółczynnik wrażliwości: " + this.isf + "\nZakres oczekiwany: " + this.bgRange + "\nKrok Bolusa: " + this.stepBol + "\nMax bolus: " + this.maxBolus + "\nSugerowany bolus: " + this.setBolVal.toFixed(1) + "\nSUGEROWANY BOLUS PO UWZGLĘDNIENIU 'KROKU BOLUSA': ",
             okButtonText: "OK",
             defaultText: this.setBolValStep.toFixed(1).toString(),
             cancelButtonText: "Anuluj",
@@ -186,16 +191,16 @@ export class BrowseComponent implements OnInit, OnDestroy {
             console.log("Dialog closed!" + r.result + ", A TO TEKST2sdfsdfsdfsdfsdfsdfsdfsdfsd:" + r.text.replace(',', '.'));
           });
           }
-          else {
-            const options = {
-              title: "Brak danych z kalkulatora bolusa",
-              message: "Należy z menu wybrać opcję 'Odśwież ustawienia kalkulatora bolusa'",
-              okButtonText: "OK"
-            };
-            alert(options);
-          }
         });
       }
+      else {
+          const options = {
+            title: "Brak danych z kalkulatora bolusa",
+            message: "Należy z menu wybrać opcję 'Odśwież ustawienia kalkulatora bolusa'",
+            okButtonText: "OK"
+          };
+          alert(options);
+        }}
     });
   }
 

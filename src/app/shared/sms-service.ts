@@ -25,7 +25,7 @@ export class SmsService {
         TNSInbox.getInboxesFromNumber('+48' + this.phoneNum, { max: 1 }).then((res) => {
           console.log(JSON.stringify(res));
           const obj = JSON.parse(JSON.stringify(res));
-          console.log(obj.data[0].message, "hpsssssss!");
+          console.log(obj.data[0].message, "hpsassssss!");
           this.message = obj.data[0].message;
           this.dateMessage = obj.data[0].date;
           appSettings.setString('dateMessage', this.dateMessage);
