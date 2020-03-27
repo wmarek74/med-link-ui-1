@@ -214,10 +214,9 @@ export class DataFacadeService {
         .then(
           uidBt => {
             if (uidBt === "MED-LINK" || uidBt === "MED-LINK-2" || uidBt === "MED-LINK-3" || uidBt === "HMSoft") {
-              console.log(uidBt + "BBBBBBBBBBBBBBBBBBBBB");
+              console.log("Udało połączyć się z: " + uidBt);
               return Promise.resolve(uidBt);
             } else {
-              console.log(uidBt + "Nie udalo sie polaczyc booooooo oooooooo status 133");
               return Promise.reject();
             }
           },
@@ -225,12 +224,12 @@ export class DataFacadeService {
             console.log("poszedł prawdziwy reject11!!!!!" + uidBt + "       d");
             return this.pumpBluetoothApiService.scanAndConnect().then(
               uidBt2 => {
-                if (uidBt2 === "HMSoft") {
+                if (uidBt2 === "MED-LINK" || uidBt2 === "MED-LINK-2" || uidBt2 === "MED-LINK-3" || uidBt2 === "HMSoft") {
                   console.log(uidBt2 + "BBBBBBBBBBBBBBBBBBBBB");
                   return Promise.resolve(uidBt2);
                 } else {
                   console.log(
-                    uidBt2 + "Nie udalo sie polaczyc booooooo oooooooo status 133"
+                    uidBt2 + "Nie udalo sie polaczyc booo status 133"
                   );
                   return Promise.reject();
                 }
@@ -247,7 +246,7 @@ export class DataFacadeService {
           () =>
             setTimeout(
               () => this.pumpBluetoothApiService.sendCommand("OK+CONN"),
-              4500
+              2500
             ),
           () => {
             console.log("zatem nie wyslam ok kona");
@@ -331,7 +330,7 @@ export class DataFacadeService {
                       console.log("STOP POMPA");
                       this.pumpBluetoothApiService.sendCommand("stop");
                       setTimeout( () => this.pumpBluetoothApiService.read5().subscribe(() => {
-                        this.zone.run (() => appSettings.setString("pumpStan", "WZNOW POMPE"));
+                        this.zone.run (() => appSettings.setString("pumpStan", "WZNÓW POMPĘ"));
                         this.pumpBluetoothApiService.disconnect();
                         clearTimeout(timeoutAlert);
                         resolve();
@@ -341,7 +340,7 @@ export class DataFacadeService {
                       console.log("START POMPA!!!");
                       this.pumpBluetoothApiService.sendCommand("start");
                       setTimeout( () => this.pumpBluetoothApiService.read4().subscribe(() => {
-                        this.zone.run (() => appSettings.setString("pumpStan", "ZAWIES POMPE"));
+                        this.zone.run (() => appSettings.setString("pumpStan", "ZAWIEŚ POMPĘ"));
                         this.pumpBluetoothApiService.disconnect();
                         clearTimeout(timeoutAlert);
                         resolve();
@@ -581,17 +580,17 @@ export class DataFacadeService {
 
   errorPumpStan(){
     appSettings.setBoolean("isBusy", false);
-    appSettings.setString("pumpStan", "ZMIEN STAN POMPY");
+    appSettings.setString("pumpStan", "ZMIEŃ STAN POMPY");
     const options = {
-      title: "Cos poszło nie tak",
-      message: "Sprawdz stan pompy!",
+      title: "Coś poszło nie tak",
+      message: "Sprawdź stan pompy!",
       okButtonText: "Przyjąłem do wiadomości"
     };
     alert(options);
   }
   successLog(){
     const options = {
-      title: "Hurreeey!! :)",
+      title: "Brawo!",
       message: "Udało się podać bolus!",
       okButtonText: "OK"
     };
@@ -629,7 +628,7 @@ export class DataFacadeService {
             console.log("STOP POMPA");
             this.pumpBluetoothApiService.sendCommand("stop");
             setTimeout( () => this.pumpBluetoothApiService.read3().subscribe(() => {
-              this.zone.run (() => this.stanPump = "WYLACZ POMPE");
+              this.zone.run (() => this.stanPump = "WYŁĄCZ POMPĘ");
               this.pumpBluetoothApiService.disconnect();
             }), 500);
           } else
@@ -637,7 +636,7 @@ export class DataFacadeService {
             console.log("START POMPA!!!");
             this.pumpBluetoothApiService.sendCommand("start");
             setTimeout( () => this.pumpBluetoothApiService.read3().subscribe(() => {
-              this.zone.run (() => this.stanPump = "WLACZ POMPE");
+              this.zone.run (() => this.stanPump = "WŁĄCZ POMPĘ");
               this.pumpBluetoothApiService.disconnect()}), 500);
           }
         })
@@ -649,7 +648,7 @@ export class DataFacadeService {
       console.log("AKT WOJNY" + a + b + appSettings.getBoolean('auto', false));
       this.scanAndConnectStop().then(() => {
         console.log("Pompa wyl");
-        appSettings.setString("autostop", new Date().toString().substring(3, 21) + " UWAGA POMPA ZATRZYMANA PRZEZ FUNKCJE AUTO STOP\n\n" );
+        appSettings.setString("autostop", new Date().toString().substring(3, 21) + " UWAGA! POMPA ZATRZYMANA PRZEZ FUNKCJĘ AUTO STOP\n\n" );
       }, () => console.log("BADD ASS nie wylaczona"));
     }
     else {
@@ -657,7 +656,7 @@ export class DataFacadeService {
         console.log("AKT WOJNY3" + a + b);
         this.scanAndConnectStop().then(() => {
           console.log("Pompa wlaczona");
-          appSettings.setString("autostop", new Date().toString().substring(3, 21) + " UWAGA POMPA WZNOWIONA PRZEZ FUNKCJE AUTO START\n\n");
+          appSettings.setString("autostop", new Date().toString().substring(3, 21) + " UWAGA! POMPA WZNOWIONA PRZEZ FUNKCJĘ AUTO START\n\n");
         }, () => console.log("BADD ASS 2 nie wylaczona"));
       }
       else {
@@ -671,9 +670,9 @@ export class DataFacadeService {
   }
   validateSms() {
     this.smsService.getInboxMessagesFromNumber().then( () => {
-    console.log("to jest tresc smsa: " + this.smsService.message.toUpperCase() + this.smsService.message.toUpperCase().match(/STOP/));
+    console.log("to jest tresc smsa: " + this.smsService.message.toUpperCase());
     //const dateM = appSettings.getString('dateMessageOld', '');
-    if (this.smsService.message.toUpperCase().match(/STOP/) && !(this.smsService.dateMessage === appSettings.getString('dateMessageOld', ''))) {
+    if (this.smsService.message.toUpperCase() === 'STOP' && !(this.smsService.dateMessage === appSettings.getString('dateMessageOld', ''))) {
       appSettings.setString('dateMessageOld', this.smsService.dateMessage);
       this.scanAndConnectStop().then(a => this.smsService.sendSms(), () => console.log("Wyslij smutnego smsa"));
     }
@@ -682,7 +681,7 @@ export class DataFacadeService {
     }});
   }
   transferDataFromPumpThenToApi() {
-    setTimeout(() => this.pumpBluetoothApiService.sendCommand2("s"), 3600);
+    setTimeout(() => this.pumpBluetoothApiService.sendCommand2("s"), 400);
     setTimeout(() => {
       this.pumpBluetoothApiService.read2().subscribe(data => {
         console.log('TOOOOO:   ' + data.toString());
@@ -731,7 +730,7 @@ export class DataFacadeService {
           });
         //this.pumpBluetoothApiService.disconnect();
       });
-    }, 3900);
+    }, 400);
   }
 
   private setArrow(old: string) {
