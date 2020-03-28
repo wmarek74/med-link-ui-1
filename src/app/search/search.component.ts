@@ -82,7 +82,7 @@ export class SearchComponent implements OnInit {
   setPhoneNumber(){
     dialogs.prompt({
       title: "Podaj nr tel. opiekuna",
-      message: "Podaj numer telefonu z którego będą przyjmowane komendy",
+      message: "Podaj numer telefonu z którego będą przyjmowane komendy tj.: START, STOP, BG, BOL: X.X",
       okButtonText: "OK",
       cancelButtonText: "Anuluj",
       inputType: dialogs.inputType.number
