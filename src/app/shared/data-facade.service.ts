@@ -9,6 +9,7 @@ import { PumpBluetoothApiService } from "~/app/shared/pump-bluetooth-api.service
 import { RawDataService } from "~/app/shared/raw-data-parse.service";
 import { WakeFacadeService } from "~/app/shared/wake-facade.service";
 import * as appSettings from "application-settings";
+import { SmsFacadeService } from '~/app/shared/sms-facade.service';
 
 @Injectable({
   providedIn: "root"
@@ -26,6 +27,7 @@ export class DataFacadeService {
   constructor(
     private databaseService: DatabaseService,
     private zone: NgZone,
+    private smsFacadeService: SmsFacadeService,
     private smsService: SmsService,
     private nightscoutApiService: NightscoutApiService,
     private pumpBluetoothApiService: PumpBluetoothApiService,
@@ -207,10 +209,7 @@ export class DataFacadeService {
   }
 
   private scanAndConnect() {
-    //this.wakeFacadeService.wakeScreenByCall();
-    try {
-      this.pumpBluetoothApiService
-        .scanAndConnect()
+      this.pumpBluetoothApiService.scanAndConnect()
         .then(
           uidBt => {
             if (uidBt === "MED-LINK" || uidBt === "MED-LINK-2" || uidBt === "MED-LINK-3" || uidBt === "HMSoft") {
@@ -259,15 +258,9 @@ export class DataFacadeService {
           },
           () => {
             console.log("zatem nie czekam na ready");
-            //this.wakeFacadeService.snoozeScreenByCall();
           }
         )
-        .catch(error => console.log("error: ", error));
-    } catch {
-      console.log("Totalna zsssajebka");
-    }
-    //const estimatedTimeToEndTask = 30 * 1000;
-    //setTimeout(() => this.wakeFacadeService.snoozeScreenByCall(), estimatedTimeToEndTask);
+
   }
    scanAndConnectStop() {
      return new Promise((resolve, reject) => {
@@ -288,7 +281,7 @@ export class DataFacadeService {
             console.log("poszedł prawdziwy reject11!!!!!" + uidBt + "       d");
             return this.pumpBluetoothApiService.scanAndConnect().then(
               uidBt2 => {
-                if (uidBt2 === "HMSoft") {
+                if (uidBt === "MED-LINK" || uidBt === "MED-LINK-2" || uidBt === "MED-LINK-3" || uidBt === "HMSoft") {
                   console.log(uidBt2 + "BBBBBBBBBBBBBBBBBBBBB");
                   return Promise.resolve(uidBt2);
                 } else {
@@ -382,7 +375,7 @@ export class DataFacadeService {
               console.log("poszedł prawdziwy reject11!!!!!" + uidBt + "       d");
               return this.pumpBluetoothApiService.scanAndConnect().then(
                 uidBt2 => {
-                  if (uidBt2 === "HMSoft") {
+                  if (uidBt === "MED-LINK" || uidBt === "MED-LINK-2" || uidBt === "MED-LINK-3" || uidBt === "HMSoft") {
                     console.log(uidBt2 + "BBBBBBBBBBBBBBBBBBBBB");
                     return Promise.resolve(uidBt2);
                   } else {
@@ -488,7 +481,7 @@ export class DataFacadeService {
               console.log("poszedł prawdziwy reject11!!!!!" + uidBt + "       d");
               return this.pumpBluetoothApiService.scanAndConnect().then(
                 uidBt2 => {
-                  if (uidBt2 === "HMSoft") {
+                  if (uidBt === "MED-LINK" || uidBt === "MED-LINK-2" || uidBt === "MED-LINK-3" || uidBt === "HMSoft") {
                     console.log(uidBt2 + "BBBBBBBBBBBBBBBBBBBBB");
                     return Promise.resolve(uidBt2);
                   } else {
@@ -739,7 +732,9 @@ export class DataFacadeService {
             .then(() => this.databaseService.updateTreatments())
             .then(() => this.sendDatatoNightscout4())
             .then(() => this.databaseService.updateTempBasal())
-            .then(() =>  this.checkSourceBeforePrevent(parsedDate).then(() => this.validateSms().then(() => this.pumpBluetoothApiService.disconnect())))
+            .then(() =>  this.checkSourceBeforePrevent(parsedDate)
+              .then(() => this.smsFacadeService.validateSms()
+                .then(() => this.pumpBluetoothApiService.disconnect())))
           .catch(error => {
             console.log(error);
             //this.wakeFacadeService.snoozeScreenByCall()

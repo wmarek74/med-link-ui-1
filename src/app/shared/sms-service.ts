@@ -45,5 +45,15 @@ export class SmsService {
     //TNSsms.sms(this.phoneNum, 'Udało się zatrzymać pompę');
   }
 
+  sendBadSms() {
+    const sms = android.telephony.SmsManager.getDefault();
+    sms.sendTextMessage(this.phoneNum, null, "Coś poszło nie tak! Warto sprawdzić stan pompy.", null, null);
+    //TNSsms.sms(this.phoneNum, 'Udało się zatrzymać pompę');
+  }
+  sendBadSms2 (arg) {
+    const sms = android.telephony.SmsManager.getDefault();
+    sms.sendTextMessage(this.phoneNum, null, "Odp z pilota: " + arg.toString(), null, null);
+    //TNSsms.sms(this.phoneNum, 'Udało się zatrzymać pompę');
+  }
 
 }
