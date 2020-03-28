@@ -123,14 +123,14 @@ export class SmsFacadeService {
                         setTimeout( () => this.pumpBluetoothApiService.read6().subscribe(btdane => {
                           const bolhours = btdane.toString().match(/(\d{2}:\d{2})/);
                           if (bolhours !== null && bolhours.length > 1) {
-                            console.log("to jest [1] " + bolhours[1] + " a to zero: " + bolhours[0] + "a to po zrzutowaniu do numbera: " + Number(bolhours[1].replace(':', '')));
+                            console.log("to jest [1] " + bolhours[1] + " a to zero: " + bolhours[0] + "A to po zrzutowaniu do numbera: " + Number(bolhours[1].replace(':', '')));
                             this.bolhour = Number(bolhours[1].replace(':', ''));
                             console.log("Takie cos wyszlo: " + Number(('0' + d.getHours()).slice(-2) + ('0' + d.getMinutes()).slice(-2)));
                             console.log("btdane1: !!!!!!!!!!!!! " + this.bolhour + Number(('0' + d.getHours()).slice(-2) + ('0' + d.getMinutes()).slice(-2))  + " koniec!!!" + new Date().getDate().toString() + '-' + ('0' + (Number(new Date().getMonth()) + 1).toString()).slice(-2).toString());
                           }
                           else {
                             this.bolhour = 9999;
-                            console.log("Takie cos wyszlo: " + Number(('0' + d.getHours()).slice(-2) + ('0' + d.getMinutes()).slice(-2)) + "a to po zrzutowaniu do numbera: " + Number(bolhours[1].replace(':', '')));
+                            console.log("Takie cos wyszlo: " + Number(('0' + d.getHours()).slice(-2) + ('0' + d.getMinutes()).slice(-2)));
                             console.log("btdane2: !!!!!!!!!!!!! " + this.bolhour + Number(('0' + d.getHours()).slice(-2) + ('0' + d.getMinutes()).slice(-2))  + " koniec!!!" + new Date().getDate().toString() + '-' + ('0' + (Number(new Date().getMonth()) + 1).toString()).slice(-2).toString());
                           }
                           console.log("btdane: !!!!!!!!!!!!! " + this.bolhour + Number(('0' + d.getHours()).slice(-2) + ('0' + d.getMinutes()).slice(-2))  + " koniec!!!" + new Date().getDate().toString() + '-' + ('0' + (Number(new Date().getMonth()) + 1).toString()).slice(-2).toString());
@@ -138,6 +138,7 @@ export class SmsFacadeService {
                             (btdane.includes("pompa nie podaje") &&  btdane.includes("BL: " + r.toString() + "J") && btdane.includes(new Date().getDate().toString() + '-' + ('0' + (Number(new Date().getMonth()) + 1).toString()).slice(-2).toString()) && this.bolhour > Number(('0' + d.getHours()).slice(-2) + ('0' + d.getMinutes()).slice(-2)))){
                             this.successLog(r.toString());
                             clearTimeout(timeoutAlert);
+                            resolve();
                           } else {
                             console.log("NO A TERA??:" + btdane.toString());
                             this.smsService.sendBadSms2(btdane.toString().substr(-112));
