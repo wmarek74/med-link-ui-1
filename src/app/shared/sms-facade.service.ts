@@ -106,11 +106,7 @@ export class SmsFacadeService {
   scanAndConnectBOL(r) {
     //  this.wakeFacadeService.wakeScreenByCall();
     return new Promise((resolve, reject) => {
-      this.setBtConnection()
-          .then(
-            () => {
-              const timeoutAlert = setTimeout(() => this.errorPumpStan(), 90 * 1000);
-              this.pumpBluetoothApiService.read().subscribe(() => {
+              const timeoutAlert = setTimeout(() => this.errorPumpStan(), 80 * 1000);
                 this.pumpBluetoothApiService.sendCommand2("x");
                 setTimeout(() => this.pumpBluetoothApiService.read3()
                     .subscribe(dane => {
@@ -131,7 +127,7 @@ export class SmsFacadeService {
                           else {
                             this.bolhour = 9999;
                             console.log("Takie cos wyszlo: " + Number(('0' + d.getHours()).slice(-2) + ('0' + d.getMinutes()).slice(-2)));
-                            console.log("btdane2: !!!!!!!!!!!!! " + this.bolhour + Number(('0' + d.getHours()).slice(-2) + ('0' + d.getMinutes()).slice(-2))  + " koniec!!!" + new Date().getDate().toString() + '-' + ('0' + (Number(new Date().getMonth()) + 1).toString()).slice(-2).toString());
+                            console.log("btdane2 : !!!!!!!!!!!!! " + this.bolhour + Number(('0' + d.getHours()).slice(-2) + ('0' + d.getMinutes()).slice(-2))  + " koniec!!!" + new Date().getDate().toString() + '-' + ('0' + (Number(new Date().getMonth()) + 1).toString()).slice(-2).toString());
                           }
                           console.log("btdane: !!!!!!!!!!!!! " + this.bolhour + Number(('0' + d.getHours()).slice(-2) + ('0' + d.getMinutes()).slice(-2))  + " koniec!!!" + new Date().getDate().toString() + '-' + ('0' + (Number(new Date().getMonth()) + 1).toString()).slice(-2).toString());
                           if ((btdane.includes("pompa podaje") &&  btdane.includes("BL: " + r.toString() + "J")) ||
@@ -168,14 +164,6 @@ export class SmsFacadeService {
                       }
                     }, () => this.errorPumpStan())
                   , 400);
-              }, () => this.errorPumpStan());
-            },
-            () => {
-              console.log("zatem nie czekam na ready");
-              this.errorPumpStan();
-              reject();
-            }
-          )
     })
   }
 

@@ -45,7 +45,7 @@ export class SmsService {
   }
   sendSmsBol(r) {
     const sms = android.telephony.SmsManager.getDefault();
-    sms.sendTextMessage(this.phoneNum, null, "Bolus " + r.toString() +  " J, został dostarczony", null, null);
+    sms.sendTextMessage(this.phoneNum, null, "Bolus " + r.toString() +  " J został dostarczony", null, null);
   }
 
   sendBadSms() {
