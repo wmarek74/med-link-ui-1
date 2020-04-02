@@ -16,6 +16,7 @@ import { SmsFacadeService } from '~/app/shared/sms-facade.service';
 })
 export class DataFacadeService {
   btData: string;
+  bolhour: number;
   int0: number;
   stanPump: string = "W TRAKCIE...";
   ww = /zakres\s(\d{1}):\s(.\W\d{3})\sJ\/WW\sstart\sgodz.\s(\d{2}:\d{2})/g;
@@ -416,8 +417,23 @@ export class DataFacadeService {
                         this.pumpBluetoothApiService.sendCommand("bolus  " + r);
                         setTimeout( () => this.pumpBluetoothApiService.read6().subscribe(btdane => {
                           console.log("btdane: !!!!!!!!!!!!!" + btdane.toString() + "koniec!!!" + new Date().getDay().toString() + '-' + new Date().getMonth().toString() );
+                          const d = new Date();
+                          d.setMinutes(d.getMinutes() - 6);
+                          const bolhours = btdane.toString().match(/(\d{2}:\d{2})/);
+                          if (bolhours !== null && bolhours.length > 1) {
+                            console.log("to jest [1] " + bolhours[1] + " a to zero: " + bolhours[0] + "A to po zrzutowaniu do numbera: " + Number(bolhours[1].replace(':', '')));
+                            this.bolhour = Number(bolhours[1].replace(':', ''));
+                            console.log("Takie cos wyszlo: " + Number(('0' + d.getHours()).slice(-2) + ('0' + d.getMinutes()).slice(-2)));
+                            console.log("btdane1: !!!!!!!!!!!!! " + this.bolhour + Number(('0' + d.getHours()).slice(-2) + ('0' + d.getMinutes()).slice(-2))  + " koniec!!!" + new Date().getDate().toString() + '-' + ('0' + (Number(new Date().getMonth()) + 1).toString()).slice(-2).toString());
+                          }
+                          else {
+                            this.bolhour = 9999;
+                            console.log("Takie cos wyszlo: " + Number(('0' + d.getHours()).slice(-2) + ('0' + d.getMinutes()).slice(-2)));
+                            console.log("btdane2 : !!!!!!!!!!!!! " + this.bolhour + Number(('0' + d.getHours()).slice(-2) + ('0' + d.getMinutes()).slice(-2))  + " koniec!!!" + new Date().getDate().toString() + '-' + ('0' + (Number(new Date().getMonth()) + 1).toString()).slice(-2).toString());
+                          }
+                          //console.log(" godzina: " + ('0' + d.getHours()).slice(-2) + ":" + ('0' + d.getMinutes()).slice(-2) + " Taki bolus zostal nastawiony: " + r + 'z taka data: ' + new Date().getDate().toString() + '-' + ('0' + (Number(new Date().getMonth()) + 1 ).toString()).slice(-2).toString());
                           if ((btdane.includes("pompa podaje") &&  btdane.includes("BL: " + r.toString() + "J")) ||
-                            (btdane.includes("pompa nie podaje") &&  btdane.includes("BL: " + r.toString() + "J") && btdane.includes(new Date().getDate().toString() + '-' + ('0' + (Number(new Date().getMonth()) + 1).toString()).slice(-2).toString()))){
+                            (btdane.includes("pompa nie podaje") &&  btdane.includes("BL: " + r.toString() + "J") && btdane.includes(new Date().getDate().toString() + '-' + ('0' + (Number(new Date().getMonth()) + 1).toString()).slice(-2).toString()) && this.bolhour > Number(('0' + d.getHours()).slice(-2) + ('0' + d.getMinutes()).slice(-2)))){
                             this.successLog(r.toString());
                             clearTimeout(timeoutAlert);
                           }

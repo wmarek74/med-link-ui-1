@@ -56,11 +56,7 @@ export class SmsFacadeService {
 
   scanAndConnectStop(arg){
     return new Promise((resolve, reject) => {
-      this.setBtConnection()
-          .then(
-            () => {
               const timeoutAlert = setTimeout(() => this.errorPumpStan(), 68 * 1000);
-              this.pumpBluetoothApiService.read().subscribe(() => {
                 this.pumpBluetoothApiService.sendCommand2("a");
                 setTimeout(() => this.pumpBluetoothApiService.read3()
                     .subscribe( dane => {
@@ -93,14 +89,6 @@ export class SmsFacadeService {
                       }
                     }, () => this.errorPumpStan())
                   , 400);
-              }, () => this.errorPumpStan());
-            },
-            () => {
-              console.log("zatem nie czekam na ready");
-              this.errorPumpStan();
-              reject();
-            }
-          )
     })
   }
   scanAndConnectBOL(r) {
@@ -110,13 +98,13 @@ export class SmsFacadeService {
                 this.pumpBluetoothApiService.sendCommand2("x");
                 setTimeout(() => this.pumpBluetoothApiService.read3()
                     .subscribe(dane => {
-                      console.log("To jest wynik" + dane + "koniec danych");
+                      console.log("To jest wynik: " + dane + "koniec danych");
                       if (dane.toString().includes("ustaw")){
                         const d = new Date();
                         d.setMinutes(d.getMinutes() - 6);
                         console.log(" godzina: " + ('0' + d.getHours()).slice(-2) + ":" + ('0' + d.getMinutes()).slice(-2) + " Taki bolus zostal nastawiony: " + r + 'z taka data: ' + new Date().getDate().toString() + '-' + ('0' + (Number(new Date().getMonth()) + 1 ).toString()).slice(-2).toString());
                         this.pumpBluetoothApiService.sendCommand("bolus  " + r);
-                        setTimeout( () => this.pumpBluetoothApiService.read6().subscribe(btdane => {
+                        setTimeout(() => this.pumpBluetoothApiService.read6().subscribe(btdane => {
                           const bolhours = btdane.toString().match(/(\d{2}:\d{2})/);
                           if (bolhours !== null && bolhours.length > 1) {
                             console.log("to jest [1] " + bolhours[1] + " a to zero: " + bolhours[0] + "A to po zrzutowaniu do numbera: " + Number(bolhours[1].replace(':', '')));
