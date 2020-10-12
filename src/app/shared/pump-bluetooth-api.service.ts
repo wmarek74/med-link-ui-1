@@ -8,6 +8,7 @@ import { DatabaseService } from '~/app/shared/database.service';
 import { ForegroundFacadeService } from '~/app/shared/foreground-facade.service';
 import { RawDataService } from '~/app/shared/raw-data-parse.service';
 import * as traceModule from "tns-core-modules/trace"
+import Thread = java.lang.Thread;
 
 @Injectable({
   providedIn: 'root'
@@ -22,11 +23,32 @@ export class PumpBluetoothApiService {
   }
 
   enable() {
-    bluetooth.enable();
+    return new Promise((resolve, reject) => {
+      const adapter = android.bluetooth.BluetoothAdapter;
+      if (!adapter.getDefaultAdapter().isEnabled().valueOf()) {
+
+        adapter.getDefaultAdapter().enable();
+        resolve();
+      }
+      else {
+        console.log('toottooto');
+        resolve();
+      }
+    });
   }
   scanAndConnect2() {
     return new Observable<string>(observer => {
       this.targetBluDeviceUUID2 = [];
+      this.enable().then(() => {
+        const adapter2 = android.bluetooth.BluetoothAdapter;
+        let step;
+        for (step = 0 ; !(adapter2.getDefaultAdapter().isEnabled().valueOf() && step < 8); step++) {
+          console.log("i jesze raz" + step + adapter2.getDefaultAdapter().isEnabled().valueOf());
+          Thread.sleep(300);
+
+        }
+
+      //bluetooth.enable().then(() =>
       bluetooth
         .startScanning({
           onDiscovered: (peripheral: Peripheral) => {
@@ -41,7 +63,7 @@ export class PumpBluetoothApiService {
           ,
           skipPermissionCheck: true,
           seconds: 2
-        }).then(() => observer.complete());
+        }).then(() => observer.complete()), () => this.enable()});
     }).pipe(reduce((acc, val) => acc + val));
   }
   private unsubscribeAll(): void {
@@ -50,9 +72,16 @@ export class PumpBluetoothApiService {
 
   scanAndConnect() {
     return new Promise((resolve, reject) => {
+      this.enable().then(() => {
+        const adapter2 = android.bluetooth.BluetoothAdapter;
+        let step;
+        for (step = 0 ; !(adapter2.getDefaultAdapter().isEnabled().valueOf() && step < 8); step++) {
+          Thread.sleep(300);
+        }
       this.databaseService.getMAC().then(a =>
       {
         this.targetBluDeviceUUID = a.toString();
+
       bluetooth.connect({
         UUID: this.targetBluDeviceUUID,
         onConnected: (peripheral: Peripheral) => {
@@ -66,7 +95,7 @@ export class PumpBluetoothApiService {
           this.unsubscribeAll();
         }
       });
-    });
+    })});
     });
     }
   sendCommand(command) {

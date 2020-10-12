@@ -42,7 +42,7 @@ export class ForegroundService extends android.app.Service {
     const openActivityIntent = new android.content.Intent();
     openActivityIntent.setClassName(Application.android.context, 'com.tns.NativeScriptActivity');
     openActivityIntent.setFlags(android.content.Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED | android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
-    const openActivityPendingIntent = PendingIntent.getActivity(Application.android.context, 0, openActivityIntent, 0);
+    const openActivityPendingIntent = PendingIntent.getActivity(Application.android.context, 0, openActivityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
 
     this.createNotificationChannel();
@@ -124,22 +124,28 @@ export class ForegroundService extends android.app.Service {
   }
 
   private getTitle(intent: android.content.Intent): string {
-    if (intent.hasExtra('title')){
-
-      const title = intent.getStringExtra('title').toString();
-      if (title) {
-        if (title === null){
-          return "MED-LINK2"
-        }
-        else {
-          return title;
-        }
-      } else {
-        return 'MED-LINK';
-      }
+    if (null == intent || intent.equals(null) || intent.getData() == null)
+    {
+      console.log("Nie bylo intentu ??");
     }
     else {
-      console.log("BAD ERROR!!");
+
+      if (intent.hasExtra('title')) {
+
+        const title = intent.getStringExtra('title').toString();
+        if (title) {
+          if (title === null) {
+            return "MED-LINK2"
+          } else {
+            return title;
+          }
+        } else {
+          return 'MED-LINK';
+        }
+      } else {
+        console.log("BAD ERROR!!");
+        return 'MED-LINK3';
+      }
     }
   }
 
