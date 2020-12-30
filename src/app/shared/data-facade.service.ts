@@ -320,7 +320,7 @@ export class DataFacadeService {
               setTimeout(() => this.pumpBluetoothApiService.read3()
                   .subscribe( dane => {
                     console.log("To jest wynik"+ dane);
-                    if (dane.toString().includes("uruchomiona")){
+                    if (dane.toString().includes("uruchomiona") || dane.toString().includes("podaje")){
                       console.log("STOP POMPA");
                       this.pumpBluetoothApiService.sendCommand("stop");
                       setTimeout( () => this.pumpBluetoothApiService.read5().subscribe(() => {
@@ -331,7 +331,7 @@ export class DataFacadeService {
                       }), 500);
                     } else
                     {
-                      console.log("START POMPA!!!");
+                      console.log("START POMPA!!!2");
                       this.pumpBluetoothApiService.sendCommand("start");
                       setTimeout( () => this.pumpBluetoothApiService.read4().subscribe(() => {
                         this.zone.run (() => appSettings.setString("pumpStan", "ZAWIEŚ POMPĘ"));
@@ -634,8 +634,8 @@ export class DataFacadeService {
     setTimeout(() => this.pumpBluetoothApiService.read3()
         .subscribe( dane => {
           console.log("To jest wynik"+ dane);
-          if (dane.toString().includes("uruchomiona")){
-            console.log("STOP POMPA");
+          if (dane.toString().includes("uruchomiona" )) {
+            console.log("STOP POMPA@");
             this.pumpBluetoothApiService.sendCommand("stop");
             setTimeout( () => this.pumpBluetoothApiService.read3().subscribe(() => {
               this.zone.run (() => this.stanPump = "WYŁĄCZ POMPĘ");
@@ -643,7 +643,7 @@ export class DataFacadeService {
             }), 500);
           } else
             {
-            console.log("START POMPA!!!");
+            console.log("START POMPA!!!@");
             this.pumpBluetoothApiService.sendCommand("start");
             setTimeout( () => this.pumpBluetoothApiService.read3().subscribe(() => {
               this.zone.run (() => this.stanPump = "WŁĄCZ POMPĘ");
