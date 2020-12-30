@@ -105,10 +105,10 @@ export class RawDataService {
                 value: +lastBolusMatch[1].trim(),
                 date: this.dateHax(lastBolusMatch[2]),
             };
-            if(!temporaryBasalMethodPercentageM) {
+            if(!temporaryBasalMethodPercentageM || parsedData.statusPump === 'suspend') {
                 parsedData.temporaryBasalMethodPercentage = {
-                    percentsOfBaseBasal: 100,
-                    timeLeftInMinutes: 0,
+                    percentsOfBaseBasal: -100,
+                    timeLeftInMinutes: 30,
                     timestamp: new Date(),
                 };
             }
