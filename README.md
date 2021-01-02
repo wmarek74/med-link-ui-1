@@ -1,6 +1,8 @@
 # MED-LINK-UI
 
-Mobile application in early implementation to work with https://github.com/sarunia/MED-LINK pilot + software
+Mobile application in early implementation to work with https://github.com/sarunia/Med-Link-v3 pilot + software, or other verison like:
+https://github.com/sarunia/Med-Link-v4
+https://github.com/sarunia/Med-Link-v5
 
 Currently android only
 Only for TESTER and education
