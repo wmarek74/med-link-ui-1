@@ -212,7 +212,7 @@ export class DatabaseService {
   public getTempBasal(): Observable<Array<Array<string>>> {
     return from(
       this.database.all(
-        "SELECT percentsOfBasal, minutes, dateString FROM tempbasal WHERE isSend = 0 and percentsOfBasal != 0 ORDER BY ID DESC LIMIT 1; "
+        "SELECT percentsOfBasal, minutes, dateString FROM tempbasal WHERE isSend = 0 ORDER BY ID DESC LIMIT 1; "
       )
     );
   }

@@ -106,13 +106,15 @@ export class RawDataService {
                 date: this.dateHax(lastBolusMatch[2]),
             };
             if(!temporaryBasalMethodPercentageM || parsedData.statusPump === 'suspend') {
+               // console.log("nie zpalao:"  + temporaryBasalMethodPercentageM[1], temporaryBasalMethodPercentageM[2], temporaryBasalMethodPercentageM[3]);
                 parsedData.temporaryBasalMethodPercentage = {
                     percentsOfBaseBasal: -100,
-                    timeLeftInMinutes: 30,
+                    timeLeftInMinutes: 10,
                     timestamp: new Date(),
                 };
             }
             else {
+             //   console.log("zlapalo" + temporaryBasalMethodPercentageM[1], temporaryBasalMethodPercentageM[2], temporaryBasalMethodPercentageM[3]);
                 parsedData.temporaryBasalMethodPercentage = {
                     percentsOfBaseBasal: +temporaryBasalMethodPercentageM[1] - 100,
                     timeLeftInMinutes: +temporaryBasalMethodPercentageM[3] + 60 * +temporaryBasalMethodPercentageM[2],
