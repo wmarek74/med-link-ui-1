@@ -48,6 +48,7 @@ export class BrowseComponent implements OnInit, OnDestroy {
   minuta: string;
   godzina: string;
   categoryCheck: string;
+  btConn: string;
 
   constructor(
     private widgetFacadeService: WidgetFacadeService,
@@ -138,11 +139,13 @@ export class BrowseComponent implements OnInit, OnDestroy {
         this.databaseService.getCalcjnaww().subscribe(a => this.tjnaww = a);
         this.databaseService.getCalcStep().subscribe(a => this.stepBol = a);
         this.databaseService.getCalcBgRange().subscribe(a => this.bgRange = a.toString());
+        this.databaseService.getLastBg152().subscribe(a => console.log('a to jest #77777777777777777777 : ' + a + new Date()));
         this.databaseService.getLastBg15().subscribe(bg => {
           //bg.toString().split('-')[0];
-          console.log("Sugar: " , bg.toString().split(',')[0]);
+
           this.lastBg = bg.toString().split(',')[0];
           this.lastBgDate = bg.toString().split(',')[1];
+          console.log("Sugar: " , bg.toString().split(',')[0] + ' a tooo : ' + this.lastBg.length + 'aaaa ' + this.bgRange.length + 'this.lastBgDate: ' + this.lastBgDate );
           if (this.lastBg.length < 1 && this.bgRange.length >= 1){
             console.log("shuga:" + this.lastBg);
             //srednia z bg range
@@ -419,6 +422,7 @@ export class BrowseComponent implements OnInit, OnDestroy {
     //this.fa.getDataFromNightscout();
     this.bool = appSettings.getBoolean("someBoolean", false);
     appSettings.setBoolean("someBoolean", this.bool);
+
     Permissions.requestPermission(
       android.Manifest.permission.ACCESS_COARSE_LOCATION
     ).then(() =>
@@ -461,7 +465,7 @@ export class BrowseComponent implements OnInit, OnDestroy {
   execSQL(){
     this.databaseService.execSQLSuccessMonitor.subscribe(wynik => {
       this.pumpData = this.fa.btData;
-      console.log("%%%%%%%%%%%%%%%%%%%%%%           :" + this.fa.btData);
+      //console.log("%%%%%%%%%%%%%%%%%%%%%%           :" + this.fa.btData);
       appSettings.setString("pumpData", this.fa.btData);
       this.foregroundUtilService.updateForeground();
       if (wynik.toString().endsWith('suspend') && !appSettings.getString('pumpStan', "ZMIEŃ STAN POMPY").toString().includes("WZNOWIENIE")){
@@ -494,6 +498,13 @@ export class BrowseComponent implements OnInit, OnDestroy {
       this.pumpData = appSettings.getString("autostop", "") + appSettings.getString("pumpData", '');
       this.pumpStan = appSettings.getString("pumpStan", "ZMIEŃ STAN POMPY");
       this.isBusy = appSettings.getBoolean("isBusy");
+      //this.btConn = appSettings.getBoolean("btBoolean", false);
+      if (appSettings.getBoolean("btBoolean", false)) {
+        this.btConn = 'Połączono z pilotem' ;
+      }
+      else  {
+        this.btConn = 'Rozłączono z pilotem';
+      }
       //console.log("551");
       this.changeColorButton();
     }, 1000);

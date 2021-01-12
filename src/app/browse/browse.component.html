@@ -21,11 +21,13 @@
       </ng-template>
     </ListView>
   <StackLayout orientation="horizontal">
-    <Label id="lbl2" text="URUCHOM I ZAAKCEPTUJ WARUNKI: " textWrap="true" class="label"margin="1" width="250"></Label>
+    <Label id="lbl2" text="URUCHOM I ZAAKCEPTUJ WARUNKI: " textWrap="true" class="label"margin="1" width="109"></Label>
     <Switch checked="{{ bool2 }}" [(ngModel)]="bool" (checkedChange)="onCheckedChange($event)" isEnabled="{{ isCompleted }}" class="switch" margin="1" width="100"></Switch>
+
   </StackLayout>
   <ActivityIndicator [busy]="isBusy"></ActivityIndicator>
   <Button class="btn btn-primary btn-active" isEnabled="{{ isCompleted }}" id="button3" [text]="pumpStan" (tap)="stop()" (longPress)="onLongPress($event)" [ngStyle]="{ 'background-color': color }"></Button>
+  <Label id="lbl6" [text]="btConn" textWrap="true" ></Label>
   <ScrollView orientation="vertical" row="1" col="0" height="550" backgroundColor="blue">
     <StackLayout>
       <Label id="lbl3" class="h3 p-15" [text]="pumpData" textWrap="true" style="color:white;" ></Label>

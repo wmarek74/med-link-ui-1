@@ -105,6 +105,9 @@ export class SearchComponent implements OnInit {
   sendLogs() {
     const documents = fs.path.join(android.os.Environment.getExternalStorageDirectory().getAbsolutePath().toString());
     const myFolder = fs.Folder.fromPath(documents);
+    Permissions.requestPermission(
+      android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+    )
     const myFile = myFolder.getFile("my.txt");
     const a = Runtime.getRuntime().exec('logcat -v time -f /sdcard/my.txt -d');
     console.log("to ta wielkosc pliku: " + myFile.size);

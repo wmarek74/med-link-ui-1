@@ -31,6 +31,7 @@ export class SmsFacadeService {
              this.scanAndConnectStop(this.smsService.message.toLowerCase()).then(a => {
                appSettings.setString('dateMessageOld', this.smsService.dateMessage);
                this.smsService.sendSms();
+               this.nightscoutApiService.setStopNs();
                resolve();
              }, () => { resolve(); console.log("Próba zmiany statusu pompy przez SMS nieudana bo status juz byl nastawiony"); });
              break;
@@ -39,6 +40,7 @@ export class SmsFacadeService {
              this.scanAndConnectBOL(this.smsService.message.toUpperCase().match(/BOL (\d.\d)/)[1].replace(',', '.')).then(() => {
                appSettings.setString('dateMessageOld', this.smsService.dateMessage);
                this.smsService.sendSmsBol(this.smsService.message.toUpperCase().match(/BOL (\d.\d)/)[1]);
+               this.nightscoutApiService.setStartNs();
                resolve();
              }, () => { resolve(); console.log("ciekawe czemu nie poszedl ten pieprzony sms"); });
              break;
@@ -53,7 +55,7 @@ export class SmsFacadeService {
       }
     });
   }
-
+  //appSettings.getBoolean("someBoolean", false);
   scanAndConnectStop(arg){
     return new Promise((resolve, reject) => {
               const timeoutAlert = setTimeout(() => this.errorPumpStan(), 68 * 1000);

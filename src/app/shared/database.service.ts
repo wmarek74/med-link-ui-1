@@ -204,7 +204,15 @@ export class DatabaseService {
   public getLastBg15(): Observable<Array<Array<string>>> {
     return from(
       this.database.all(
-        "select glucose, datetime(substr(dateString,12,4) || '-' || case substr(dateString,5,3) when 'Jan' then '01' when 'Feb' then '02' when 'Mar' then '03' when 'Apr' then '04' when 'May' then '05' when 'Jun' then '06' when 'Jul' then '07' when 'Aug' then '08' when 'Sep' then '09' when 'Oct' then '10' when 'Nov' then '11' when 'Dec' then '12' else '01' end || '-' || substr(dateString,9,2) || ' ' || substr(dateString,17,8))  from entries where glucose != 0 and datetime(substr(dateString,12,4) || '-' || case substr(dateString,5,3) when 'Jan' then '01' when 'Feb' then '02' when 'Mar' then '03' when 'Apr' then '04' when 'May' then '05' when 'Jun' then '06' when 'Jul' then '07' when 'Aug' then '08' when 'Sep' then '09' when 'Oct' then '10' when 'Nov' then '11' when 'Dec' then '12' else '01' end || '-' || substr(dateString,9,2) || ' ' || substr(dateString,17,8)) >= datetime('now', '-1 minute', 'localtime') ORDER BY id DESC LIMIT 1"
+        "select glucose, datetime(substr(dateString,12,4) || '-' || case substr(dateString,5,3) when 'Jan' then '01' when 'Feb' then '02' when 'Mar' then '03' when 'Apr' then '04' when 'May' then '05' when 'Jun' then '06' when 'Jul' then '07' when 'Aug' then '08' when 'Sep' then '09' when 'Oct' then '10' when 'Nov' then '11' when 'Dec' then '12' else '01' end || '-' || substr(dateString,9,2) || ' ' || substr(dateString,17,8))  from entries where glucose != 0 and datetime(substr(dateString,12,4) || '-' || case substr(dateString,5,3) when 'Jan' then '01' when 'Feb' then '02' when 'Mar' then '03' when 'Apr' then '04' when 'May' then '05' when 'Jun' then '06' when 'Jul' then '07' when 'Aug' then '08' when 'Sep' then '09' when 'Oct' then '10' when 'Nov' then '11' when 'Dec' then '12' else '01' end || '-' || substr(dateString,9,2) || ' ' || substr(dateString,17,8)) >= datetime('now', '-15 minute', 'localtime') ORDER BY id DESC LIMIT 1"
+      )
+    );
+  }
+
+  public getLastBg152(): Observable<Array<Array<string>>> {
+    return from(
+      this.database.all(
+        "select glucose, dateString from entries ORDER BY id DESC LIMIT 10"
       )
     );
   }

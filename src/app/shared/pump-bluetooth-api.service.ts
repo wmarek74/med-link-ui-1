@@ -3,6 +3,7 @@ import { Peripheral } from 'nativescript-bluetooth';
 import { Observable } from 'rxjs';
 import { reduce } from 'rxjs/internal/operators/reduce';
 import * as bluetooth from 'nativescript-bluetooth';
+import * as appSettings from 'tns-core-modules/application-settings';
 import { DataFacadeService } from '~/app/shared/data-facade.service';
 import { DatabaseService } from '~/app/shared/database.service';
 import { ForegroundFacadeService } from '~/app/shared/foreground-facade.service';
@@ -87,11 +88,14 @@ export class PumpBluetoothApiService {
         onConnected: (peripheral: Peripheral) => {
           console.log('Połączono' + peripheral.UUID + ' ' + peripheral.name);
           resolve(peripheral.name);
+          appSettings.setBoolean("btBoolean", true);
         },
         onDisconnected: (peripheral: Peripheral) => {
-          peripheral.name = 'ZONK';
+          //peripheral.name = 'ZONK';
           console.log('Rozłączono' + peripheral.name + peripheral.UUID);
           reject(peripheral.name);
+          appSettings.setBoolean("btBoolean", false);
+
           this.unsubscribeAll();
         }
       });
@@ -110,6 +114,22 @@ export class PumpBluetoothApiService {
       this.recursiveWrite(buffer);
       console.log('udalo sie chyba to wsykacccc komunikat');
     }
+  }
+  sendCommand4(command) {
+    return new Promise((resolve, reject) => {
+      const buffer = [];
+      console.log('bede wysylal komunikat');
+      //traceModule.write( "AAAAAAAAAAAAAAa  YYYYYunhandled-error", traceModule.categories.Debug, 2);
+      for (const char of command) {
+        const charCode = char.charCodeAt(0);
+        buffer.push(charCode);
+      }
+      if (buffer.length) {
+        this.recursiveWrite(buffer);
+        console.log('udalo sie chyba to wsykacccc komunikat');
+        resolve();
+      }
+    })
   }
   sendCommand2(command) {
     const buffer = [];
@@ -180,6 +200,7 @@ export class PumpBluetoothApiService {
           console.log(result);
           if (result.includes('rea') || result.includes('komunikacji')) {
             observer.complete();
+
           }
         },
         peripheralUUID: this.targetBluDeviceUUID,
@@ -250,6 +271,44 @@ export class PumpBluetoothApiService {
         serviceUUID: 'ffe0'
       });
     }).pipe(reduce((acc, val) => acc + val));
+  }
+   read7() {
+    return new Observable<string>(observer => {
+      bluetooth.startNotifying({
+        onNotify: ({ value }) => {
+          const result = new Uint8Array(value).reduce(
+            (o, byte) => (o += String.fromCharCode(byte)),
+            ''
+          );
+          console.log(result);
+          if (result.includes('CONN')) {
+            observer.next(result);
+          }
+          if (result.includes('rea')) {
+            console.log('HAHAHAHH MAMY TOOOO');
+            observer.complete();
+          }
+        },
+        peripheralUUID: this.targetBluDeviceUUID,
+        characteristicUUID: 'ffe1',
+        serviceUUID: 'ffe0'
+      }).then(() => console.log('Przyszło OK'), () => console.log('Error OBSLUGA!!!'));
+
+    })
+  }
+  stopNotify() {
+
+    console.log('bede wywalal NOTUIFUYYYYYYY');
+    Thread.sleep(7500)
+    bluetooth.stopNotifying({
+        peripheralUUID: this.targetBluDeviceUUID,
+        characteristicUUID: 'ffe1',
+        serviceUUID: 'ffe0'
+    }).then(function() {
+      console.log("unsubscribed for notifications");
+    }, function (err) {
+      console.log("unsubscribe error: " + err);
+    });
   }
   read5() {
     return new Observable<string>(observer => {

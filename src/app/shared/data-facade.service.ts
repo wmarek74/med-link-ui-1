@@ -1,4 +1,5 @@
 import { Injectable, NgZone} from "@angular/core";
+import { setString } from 'application-settings';
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 import { IBasicSettings } from "~/app/model/med-link.model";
@@ -10,6 +11,7 @@ import { RawDataService } from "~/app/shared/raw-data-parse.service";
 import { WakeFacadeService } from "~/app/shared/wake-facade.service";
 import * as appSettings from "application-settings";
 import { SmsFacadeService } from '~/app/shared/sms-facade.service';
+import Thread = java.lang.Thread;
 
 @Injectable({
   providedIn: "root"
@@ -210,75 +212,62 @@ export class DataFacadeService {
   }
 
   private scanAndConnect() {
+    //this.nightscoutApiService.BgCheck();
       this.pumpBluetoothApiService.scanAndConnect()
         .then(
           uidBt => {
             if (uidBt === "MED-LINK" || uidBt === "MED-LINK-2" || uidBt === "MED-LINK-3" || uidBt === "HMSoft") {
               console.log("Udało połączyć się z: " + uidBt);
-              return Promise.resolve(uidBt);
+               return Promise.resolve(uidBt);
             } else {
+              console.log('Nie polaczyl sie jednak^^');
               return Promise.reject();
             }
           },
           uidBt => {
-            console.log("poszedł prawdziwy reject11!!!!!" + uidBt + "       d");
-            return this.pumpBluetoothApiService.scanAndConnect().then(
-              uidBt2 => {
-                if (uidBt2 === "MED-LINK" || uidBt2 === "MED-LINK-2" || uidBt2 === "MED-LINK-3" || uidBt2 === "HMSoft") {
-                  console.log(uidBt2 + "BBBBBBBBBBBBBBBBBBBBB");
-                  return Promise.resolve(uidBt2);
-                } else {
-                  console.log(
-                    uidBt2 + "Nie udalo sie polaczyc booo status 133"
-                  );
-                  return Promise.reject();
-                }
-                console.log("XaXaXaXaXa");
-              },
-              () => {
-                console.log("jednak nie udalo sie za 2");
-                return Promise.reject();
-              }
-            );
+            if (appSettings.getNumber('connection', 1) === 1){
+              console.log("poszedł prawdziwy reject11!!!!!" + uidBt + "       d");
+              appSettings.setNumber('connection', 2);
+              setTimeout(() => this.scanAndConnect(), 7000);
+            }
+            else {
+              appSettings.setNumber('connection', 1);
+              //appSettings.setNumber('connection', 1);
+              //setTimeout(() => this.scanAndConnect(), 7000);
+            }
+            return Promise.reject();
           }
-        )
-        .then(
-          () =>
-            setTimeout(
-              () => this.pumpBluetoothApiService.sendCommand("OK+CONN"),
-              2500
-            ),
-          () => {
-            console.log("zatem nie wyslam ok kona");
-            return Promise.reject(console.log("adam23333333"));
-          }
-        )
-        .then(
-          () => {
-            this.waitOnReady();
-          },
-          () => {
-            console.log("zatem nie czekam na ready");
-          }
-        )
+          //Poczekaj na OK+CONN
+        ).then(() => { this.pumpBluetoothApiService.read7().subscribe(
+          () => this.pumpBluetoothApiService.sendCommand4("OK+CONN").then( () => console.log('asaAAAAAAAAAAAAAAAAAAAAsA')) ,
+        () => { console.log('Polecial blad wiec proba wyla bt, 5 sec , i connect again '); this.pumpBluetoothApiService.disconnect(); setTimeout( () => this.scanAndConnect(), 5000); },
+        () =>   {
+          this.transferDataFromPumpThenToApi();
+            });
+        }, () => {
+          console.log('Chyba nie udalo sie polaczyc' );
+          //this.pumpBluetoothApiService.disconnect();
+        })
+        .then(() => {console.log('NN')});
 
   }
+
    scanAndConnectStop() {
      return new Promise((resolve, reject) => {
     try {
       this.pumpBluetoothApiService
         .scanAndConnect()
-        .then(
-          uidBt => {
+        .then(uidBt => {
             if (uidBt === "MED-LINK" || uidBt === "MED-LINK-2" || uidBt === "MED-LINK-3" || uidBt === "HMSoft") {
               console.log(uidBt + "BBBBBBBBBBBBBBBBBBBBB");
               return Promise.resolve(uidBt);
             } else {
               console.log(uidBt + "Nie udalo sie polaczyc booooooo oooooooo status 133");
               return Promise.reject();
-            }
-          },
+            }},
           uidBt => {
+            console.log("czekalem 2300ms na kolejna probe polaczenia przy bol");
+            Thread.sleep(7000);
             console.log("poszedł prawdziwy reject11!!!!!" + uidBt + "       d");
             return this.pumpBluetoothApiService.scanAndConnect().then(
               uidBt2 => {
@@ -364,6 +353,7 @@ export class DataFacadeService {
           .scanAndConnect()
           .then(
             uidBt => {
+
               if (uidBt === "MED-LINK" || uidBt === "MED-LINK-2" || uidBt === "MED-LINK-3" || uidBt === "HMSoft") {
                 console.log(uidBt + "BBBBBBBBBBBBBBBBBBBBB");
                 return Promise.resolve(uidBt);
@@ -374,6 +364,8 @@ export class DataFacadeService {
             },
             uidBt => {
               console.log("poszedł prawdziwy reject11!!!!!" + uidBt + "       d");
+              console.log("czekalem 2300ms na kolejna probe polaczenia przy bol");
+              Thread.sleep(7000);
               return this.pumpBluetoothApiService.scanAndConnect().then(
                 uidBt2 => {
                   if (uidBt === "MED-LINK" || uidBt === "MED-LINK-2" || uidBt === "MED-LINK-3" || uidBt === "HMSoft") {
@@ -494,6 +486,8 @@ export class DataFacadeService {
               }
             },
             uidBt => {
+              console.log("czekalem 2300ms na kolejna probe polaczenia przy bol");
+              Thread.sleep(7000);
               console.log("poszedł prawdziwy reject11!!!!!" + uidBt + "       d");
               return this.pumpBluetoothApiService.scanAndConnect().then(
                 uidBt2 => {
@@ -619,9 +613,9 @@ export class DataFacadeService {
 
 
   waitOnReady() {
-    this.pumpBluetoothApiService.read().subscribe(() => {
-      this.transferDataFromPumpThenToApi();
-    });
+    setTimeout( () => { this.pumpBluetoothApiService.read().subscribe(() => {console.log("szukam ready")},
+      () => {console.log("wywaliło polaczenie?")},
+      () => { console.log('jak to mozliwe przeciez nie mam rea?'); this.transferDataFromPumpThenToApi(); }); }, 2500)
   }
   waitOnReadyStop() {
     this.pumpBluetoothApiService.read().subscribe(() => {
@@ -661,6 +655,9 @@ export class DataFacadeService {
           console.log("Pompa wyl");
           resolve();
           appSettings.setString("autostop", new Date().toString().substring(3, 21) + " UWAGA! POMPA ZATRZYMANA PRZEZ FUNKCJĘ AUTO STOP\n\n");
+          this.nightscoutApiService.setStopNs();
+          //nie wiem czemu ale NS nie reaguje na te zmiany
+          //this.nightscoutApiService.setStopNsDs();
         }, () => console.log("BADD ASS nie wylaczona"));
       } else {
         if (appSettings.getBoolean('auto', false) && a > appSettings.getNumber('range', 75) && !(a === 0) && !(a.toString() === '000') && b.toLowerCase().includes('suspend')) {
@@ -669,6 +666,9 @@ export class DataFacadeService {
             console.log("Pompa wlaczona");
             resolve();
             appSettings.setString("autostop", new Date().toString().substring(3, 21) + " UWAGA! POMPA WZNOWIONA PRZEZ FUNKCJĘ AUTO START\n\n");
+            this.nightscoutApiService.setStartNs();
+            console.log('wyslka danych do ns....');
+            //this.nightscoutApiService.setStartNsDs();
           }, () => console.log("BADD ASS 2 nie wylaczona"));
         } else {
           console.log("Nie uzywam auto stop/start: " + a + b);
@@ -730,34 +730,48 @@ export class DataFacadeService {
     });
   }
   transferDataFromPumpThenToApi() {
-    setTimeout(() => this.pumpBluetoothApiService.sendCommand2("s"), 400);
+    setTimeout(() => this.pumpBluetoothApiService.sendCommand2("s"), 4100);
     setTimeout(() => {
       this.pumpBluetoothApiService.read2().subscribe(data => {
         console.log('TOOOOO:   ' + data.toString());
         this.btData = data.toString();
         const parsedDate = this.rawDataService.parseData(data);
+        console.log( 'to jest ot miejsce !!!! : ' + parsedDate.bloodGlucose.value + 'aaa: ' + appSettings.getNumber('value', 320) +  parsedDate.bloodGlucose.date.toString());
+        if (parsedDate.bloodGlucose.value === appSettings.getNumber('value', 320) && parsedDate.bloodGlucose.date.toString() === appSettings.getString('dateBG', '00-00-00'))  {
+          console.log('Znalazlem te same dane co wczesniej wiec ponawiam komunikacje:');
+
+          setTimeout(() => this.transferDataFromPumpThenToApi(), 9000);
+        } else {
+          appSettings.setNumber('value', parsedDate.bloodGlucose.value);
+          appSettings.setString('dateBG', parsedDate.bloodGlucose.date.toString());
           this.sendDataToLocalDb(parsedDate)
-            .then(() => { console.log('AAAAA doszlo'); this.sendDataToLocalDb2(parsedDate); })
-            .then(() => this.sendDataToLocalDb3(parsedDate))
-            .then(() => this.sendDataToLocalDb4(parsedDate))
-            .then(() => this.sendDatatoNightscout3())
-            .then(() => this.databaseService.updateDS())
-            .then(() => this.sendDatatoNightscout())
-            .then(() => this.databaseService.updateBG())
-            .then(() => this.sendDatatoNightscout2())
-            .then(() => this.databaseService.updateTreatments())
-            .then(() => this.sendDatatoNightscout4())
-            .then(() => this.databaseService.updateTempBasal())
-            .then(() =>  this.checkSourceBeforePrevent(parsedDate)
-              .then(() => this.smsFacadeService.validateSms()
-                .then(() => this.pumpBluetoothApiService.disconnect())))
+          .then(() => {
+            console.log('AAAAA doszlo');
+            this.sendDataToLocalDb2(parsedDate);
+          })
+          .then(() => this.sendDataToLocalDb3(parsedDate))
+          .then(() => this.sendDataToLocalDb4(parsedDate))
+          .then(() => this.sendDatatoNightscout3())
+          .then(() => this.databaseService.updateDS())
+          .then(() => this.sendDatatoNightscout())
+          .then(() => this.databaseService.updateBG())
+          .then(() => this.sendDatatoNightscout2())
+          .then(() => this.databaseService.updateTreatments())
+          .then(() => this.sendDatatoNightscout4())
+          .then(() => this.databaseService.updateTempBasal())
+          .then(() => this.checkSourceBeforePrevent(parsedDate)
+            .then(() => this.smsFacadeService.validateSms()
+              .then(() => this.pumpBluetoothApiService.disconnect())))
           .catch(error => {
             console.log(error);
             //this.wakeFacadeService.snoozeScreenByCall()
           });
         //this.pumpBluetoothApiService.disconnect();
-      });
-    }, 400);
+      } });
+    }, 4200);
+  }
+  checkOldBg() {
+
   }
 
   private setArrow(old: string) {

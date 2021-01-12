@@ -90,6 +90,65 @@ export class NightscoutApiService {
     });
   }
 
+  setStopNs() {
+    return new Promise((resolve, reject) => {
+      this.getConfig().then(() => this.httpClient
+        .post(this.http + '/api/v1/treatments',
+          {
+            enteredBy: this.device,
+            secret: this.hash,
+            duration: 15,
+            created_at: new Date(),
+            percent: -100,
+            rate: 0.8,
+            eventType: 'Temp Basal',
+            timestamp: new Date()
+          }).subscribe(resolve, reject))
+    });
+  }
+  setStartNs() {
+    return new Promise((resolve, reject) => {
+      this.getConfig().then(() => this.httpClient
+        .post(this.http + '/api/v1/treatments',
+          {
+            enteredBy: this.device,
+            secret: this.hash,
+            duration: 10,
+            created_at: new Date(),
+            percent: 0,
+            rate: 0.8,
+            eventType: 'Temp Basal',
+            timestamp: new Date()
+          }).subscribe(resolve, reject))
+    });
+  }
+  setStartNsDs() {
+    return new Promise((resolve, reject) => {
+      this.getConfig().then(() => this.httpClient
+        .post(this.http + '/api/v1/devicestatus',
+          {
+            device: this.device,
+            secret: this.hash,
+            created_at: new Date(),
+            pump: {
+              status: { status: "POMPA URUCHOMIONA PONOWNIE" },
+          }}).subscribe(resolve, reject))
+    });
+  }
+  setStopNsDs() {
+    return new Promise((resolve, reject) => {
+      this.getConfig().then(() => this.httpClient
+        .post(this.http + '/api/v1/devicestatus',
+          {
+            device: this.device,
+            secret: this.hash,
+            created_at: new Date(),
+            pump: {
+              status: { status: "POMPA ZATRZYMANA" },
+            }}).subscribe(resolve, reject))
+    });
+  }
+
   sendNewTempBasal(tempbasal: Array<{ percentsOfBasal: number; minutes: number; dateString: Date }>) {
     return new Promise((resolve, reject) => {
       if (tempbasal.length >= 1) {
@@ -135,4 +194,38 @@ export class NightscoutApiService {
           uploaderBattery: bol.percent
         }))).subscribe(resolve, reject));
   });
-}}
+}
+  BgCheck() {
+    return new Promise((resolve, reject) => {
+      console.log(this.http);
+      this.httpClient
+        .post(
+          'https://testowycgm.herokuapp.com/api/v1/treatments',
+          {
+            enteredBy: 'adam',
+            secret: 'd6026bb45e7efd38de82680c75d31cf7f7a6a1e3',
+            eventType: "BG Check",
+            created_at: new Date(),
+            glucose: '150',
+            glucoseType: 'Finger',
+            units: 'units: mg/dl'
+          }).subscribe(resolve, reject);
+    })}
+  BgCheck2() {
+    return new Promise((resolve, reject) => {
+      console.log(this.http);
+      this.httpClient
+        .post(
+          'https://testowycgm.herokuapp.com/api/v1/treatments',
+          {
+            enteredBy: 'adam',
+            secret: 'd6026bb45e7efd38de82680c75d31cf7f7a6a1e3',
+            eventType: "BG Check",
+            created_at: new Date(),
+            glucose: '170',
+            glucoseType: 'Finger',
+            units: 'units: mg/dl'
+          }).subscribe(resolve, reject);
+    })}
+}
+
