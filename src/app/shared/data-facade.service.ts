@@ -226,28 +226,25 @@ export class DataFacadeService {
             }
           },
           uidBt => {
-            if (appSettings.getNumber('connection', 1) === 1){
-              console.log("poszedł prawdziwy reject11!!!!!" + uidBt + "       d");
-              appSettings.setNumber('connection', 2);
-              setTimeout(() => this.scanAndConnect(), 7000);
-            }
-            else {
-              appSettings.setNumber('connection', 1);
-              //appSettings.setNumber('connection', 1);
-              //setTimeout(() => this.scanAndConnect(), 7000);
-            }
             return Promise.reject();
           }
           //Poczekaj na OK+CONN
         ).then(() => {
+          //mozna to bedzie usunc jak slawek zrobi ok+conn dla dalekiego zasigu
+          appSettings.setBoolean('odczyt', true);
+          setTimeout(() =>  {
+            if (appSettings.getBoolean('odczyt', true)) {
+              this.pumpBluetoothApiService.sendCommand4("OK+CONN").then(() => console.log('WYSYLAM NA WSZELI WYPADEK OK+CONN'), () => console.log('NIE  !!!!   WYSYLAM NA WSZELI WYPADEK OK+CONN'))
+            }} , 5000);
           this.pumpBluetoothApiService.read7().subscribe(
-          () => this.pumpBluetoothApiService.sendCommand4("OK+CONN").then( () => console.log('asaAAAAAAAAAAAAAAAAAAAAsA')) ,
-        () => { console.log('Polecial blad wiec proba wyla. bt, 5 sec , i connect again '); this.pumpBluetoothApiService.disconnect(); setTimeout( () => this.scanAndConnect(), 5000); },
+          result => { appSettings.setBoolean('odczyt', false); this.pumpBluetoothApiService.sendCommand4("OK+CONN").then( () => console.log('asaAAAAAAAAAAAAAAAAAAAAssA')) } ,
+        () => { console.log('Polecial blad wiec byla tu proba wyla. bt, 5 sec , i connect again  ale to skasowalem teraz jest tylko disconnect '); this.pumpBluetoothApiService.disconnect(); },
         () =>   {
           this.transferDataFromPumpThenToApi();
-            });
+            })
         }, () => {
           console.log('Chyba nie udalo sie polaczyc' );
+          //Promise.reject();
           //this.pumpBluetoothApiService.disconnect();
         })
         .then(() => {
@@ -269,7 +266,7 @@ export class DataFacadeService {
             }
             }, 15 * 1000);
           console.log('NN');
-        });
+        }, () => console.log('wiec normalni sie konczy?'));
 
   }
 

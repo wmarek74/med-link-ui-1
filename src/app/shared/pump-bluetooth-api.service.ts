@@ -280,7 +280,18 @@ export class PumpBluetoothApiService {
             (o, byte) => (o += String.fromCharCode(byte)),
             ''
           );
-          console.log(result);
+          console.log("to jest odp z pilota: " + result);
+
+          if (result.toString() === '') {
+            setTimeout(() => {
+              console.log("aaa444443333aasaaa6&");
+              if (result === '' && appSettings.getBoolean('btBoolean', false)){ console.log("aaa444443333aaaaa6&"); observer.next(result) }
+              else { console.log('odwolanie nexta')}
+            }, 5000);
+          }
+          if (result.includes('obudzony')) {
+            appSettings.setBoolean('odczyt', false);
+          }
           if (result.includes('CONN')) {
             observer.next(result);
           }
