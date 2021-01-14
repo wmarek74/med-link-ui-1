@@ -124,9 +124,9 @@ export class ForegroundService extends android.app.Service {
   }
 
   private getTitle(intent: android.content.Intent): string {
-    if (null == intent || intent.equals(null) || intent.getData() == null)
+    if (null == intent || intent.equals(null))
     {
-      console.log("Nie bylo intentu ??");
+      console.log("Nie bylo intentu ??" + intent);
     }
     else {
 

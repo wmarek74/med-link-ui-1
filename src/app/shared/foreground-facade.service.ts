@@ -21,7 +21,7 @@ export class ForegroundFacadeService {
   }
   updateForeground(){
     this.databaseService.getLastBg().subscribe(wynik => {
-      console.log("to jest wynik co ma isc do belki: " + wynik.toString());
+      console.log("to jest wynik co ma isc do belki2: " + wynik.toString());
       //this.belka = wynik.toString() + new Date();
       const foregroundNotificationIntent = new android.content.Intent();
       foregroundNotificationIntent.setClassName(app.android.context, 'com.tns.ForegroundService');

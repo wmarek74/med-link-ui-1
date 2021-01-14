@@ -212,6 +212,7 @@ export class DataFacadeService {
   }
 
   private scanAndConnect() {
+    appSettings.setBoolean('finish', false);
     //this.nightscoutApiService.BgCheck();
       this.pumpBluetoothApiService.scanAndConnect()
         .then(
@@ -238,9 +239,10 @@ export class DataFacadeService {
             return Promise.reject();
           }
           //Poczekaj na OK+CONN
-        ).then(() => { this.pumpBluetoothApiService.read7().subscribe(
+        ).then(() => {
+          this.pumpBluetoothApiService.read7().subscribe(
           () => this.pumpBluetoothApiService.sendCommand4("OK+CONN").then( () => console.log('asaAAAAAAAAAAAAAAAAAAAAsA')) ,
-        () => { console.log('Polecial blad wiec proba wyla bt, 5 sec , i connect again '); this.pumpBluetoothApiService.disconnect(); setTimeout( () => this.scanAndConnect(), 5000); },
+        () => { console.log('Polecial blad wiec proba wyla. bt, 5 sec , i connect again '); this.pumpBluetoothApiService.disconnect(); setTimeout( () => this.scanAndConnect(), 5000); },
         () =>   {
           this.transferDataFromPumpThenToApi();
             });
@@ -248,7 +250,26 @@ export class DataFacadeService {
           console.log('Chyba nie udalo sie polaczyc' );
           //this.pumpBluetoothApiService.disconnect();
         })
-        .then(() => {console.log('NN')});
+        .then(() => {
+          setTimeout( () => {
+            // sprawdz czy nie rozlaczylo po 12 sec z BT i w razie co ponów połączenie.
+            if (appSettings.getBoolean('finish', true)){
+              console.log('Koniec procesu ');
+            }
+            else {
+              if (appSettings.getBoolean('btBoolean', false) || appSettings.getBoolean('retry', false)) {
+                console.log('akcja z ponawianiem odwolana');
+                appSettings.setBoolean('retry', false);
+              }
+              else {
+                console.log('zerwalo polaczenie wiec ponawiam jeszcze raz od razu');
+                this.scanAndConnect();
+                appSettings.setBoolean('retry', true);
+              }
+            }
+            }, 15 * 1000);
+          console.log('NN');
+        });
 
   }
 
@@ -315,6 +336,7 @@ export class DataFacadeService {
                       setTimeout( () => this.pumpBluetoothApiService.read5().subscribe(() => {
                         this.zone.run (() => appSettings.setString("pumpStan", "WZNÓW POMPĘ"));
                        // this.pumpBluetoothApiService.disconnect();
+                        this.nightscoutApiService.setStopNs();
                         clearTimeout(timeoutAlert);
                         resolve();
                       }), 500);
@@ -325,6 +347,7 @@ export class DataFacadeService {
                       setTimeout( () => this.pumpBluetoothApiService.read4().subscribe(() => {
                         this.zone.run (() => appSettings.setString("pumpStan", "ZAWIEŚ POMPĘ"));
                        // this.pumpBluetoothApiService.disconnect();
+                        this.nightscoutApiService.setStartNs();
                         clearTimeout(timeoutAlert);
                         resolve();
                       }), 500);
@@ -734,13 +757,15 @@ export class DataFacadeService {
     setTimeout(() => {
       this.pumpBluetoothApiService.read2().subscribe(data => {
         console.log('TOOOOO:   ' + data.toString());
+        appSettings.setBoolean('finish', true);
+        appSettings.setBoolean('retry', true);
         this.btData = data.toString();
         const parsedDate = this.rawDataService.parseData(data);
         console.log( 'to jest ot miejsce !!!! : ' + parsedDate.bloodGlucose.value + 'aaa: ' + appSettings.getNumber('value', 320) +  parsedDate.bloodGlucose.date.toString());
         if (parsedDate.bloodGlucose.value === appSettings.getNumber('value', 320) && parsedDate.bloodGlucose.date.toString() === appSettings.getString('dateBG', '00-00-00'))  {
           console.log('Znalazlem te same dane co wczesniej wiec ponawiam komunikacje:');
 
-          setTimeout(() => this.transferDataFromPumpThenToApi(), 9000);
+          setTimeout(() => this.transferDataFromPumpThenToApi(), 11000);
         } else {
           appSettings.setNumber('value', parsedDate.bloodGlucose.value);
           appSettings.setString('dateBG', parsedDate.bloodGlucose.date.toString());
